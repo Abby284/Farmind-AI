@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FarmMind AI — Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#130e05;--card:rgba(255,248,230,0.04);--border:rgba(255,248,230,0.09);
+  --wheat:#c9a14a;--sun:#f0c040;--leaf:#3d9e41;--sage:#7ec882;
+  --red:#e05555;--yellow:#d4a017;
+  --cream:#fdf5e4;--cream2:rgba(253,245,228,.65);--cream3:rgba(253,245,228,.35);
+  --cream4:rgba(253,245,228,.08);--cream5:rgba(253,245,228,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);
+  background-image:radial-gradient(ellipse at 10% 40%,rgba(20,50,15,.6) 0,transparent 55%),
+    radial-gradient(ellipse at 90% 10%,rgba(50,35,5,.6) 0,transparent 50%),#130e05;
+}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px 90px}
+
+/* Nav */
+nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0;
+  border-bottom:1px solid var(--border);margin-bottom:36px}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;
+  background:linear-gradient(135deg,var(--wheat),var(--sage));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-back{background:var(--cream4);border:1px solid var(--border);border-radius:10px;
+  padding:8px 16px;color:var(--cream2);font-size:.8rem;text-decoration:none;
+  transition:background .2s}
+.nav-back:hover{background:rgba(253,245,228,.12)}
+
+/* Section header */
+.sec{margin:36px 0 16px;display:flex;align-items:center;gap:10px}
+.sec h2{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--wheat)}
+hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+
+/* Summary chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px}
+.chip{background:var(--cream4);border-radius:20px;padding:4px 13px;
+  font-size:.73rem;color:var(--cream3)}
+.chip b{color:var(--wheat)}
+
+/* Crop cards grid */
+.crops-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.crop-card{background:var(--cream5);border:1px solid var(--border);border-radius:18px;
+  padding:24px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;cursor:pointer}
+.crop-card:hover{transform:translateY(-3px);border-color:rgba(61,158,65,.3)}
+.crop-card.top{border-color:rgba(201,161,74,.35);background:rgba(201,161,74,.05)}
+.top-badge{position:absolute;top:13px;right:13px;
+  background:linear-gradient(135deg,var(--wheat),var(--sun));color:#1a1000;
+  font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  padding:3px 9px;border-radius:20px}
+.crop-emoji{font-size:2rem;margin-bottom:9px;display:block}
+.crop-name{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:9px}
+.match-row{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.bar-bg{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden}
+.bar{height:100%;border-radius:5px;width:0;transition:width 1s ease}
+.pct{font-size:.78rem;font-weight:600;min-width:32px}
+.crop-meta{font-size:.75rem;color:var(--cream3);margin-bottom:9px;line-height:1.7}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.tag{background:rgba(61,158,65,.1);border:1px solid rgba(61,158,65,.18);
+  border-radius:20px;padding:2px 8px;font-size:.66rem;color:var(--sage)}
+.risk-badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;
+  padding:3px 10px;font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+.risk-low   {background:rgba(61,158,65,.12); border:1px solid rgba(61,158,65,.25); color:var(--sage)}
+.risk-medium{background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.28);color:var(--yellow)}
+.risk-high  {background:rgba(224,85,85,.12); border:1px solid rgba(224,85,85,.25); color:var(--red)}
+.why-hint{font-size:.67rem;color:var(--cream3);margin-top:8px;opacity:.65}
+
+/* WHY panel */
+.why-panel{display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px}
+.why-panel.open{display:block}
+.why-label{font-size:.66rem;text-transform:uppercase;letter-spacing:1px;color:var(--sage);margin-bottom:10px}
+.param-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.p-name{font-size:.72rem;color:var(--cream3);width:96px;flex-shrink:0}
+.p-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden}
+.p-bar{height:100%;border-radius:5px;transition:width .9s ease}
+.p-score{font-size:.7rem;font-family:'DM Mono',monospace;color:var(--cream2);min-width:44px;text-align:right}
+.p-note{font-size:.68rem;color:var(--cream3);margin-left:4px}
+
+/* Profit */
+.profit-block{margin-bottom:24px}
+.profit-block h3{font-size:.88rem;color:var(--cream2);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px}
+.profit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.pc{background:var(--cream5);border:1px solid var(--border);border-radius:14px;padding:17px}
+.pc.hl{border-color:rgba(61,158,65,.3);background:rgba(61,158,65,.06)}
+.pc-lbl{font-size:.67rem;text-transform:uppercase;letter-spacing:.9px;color:var(--cream3);margin-bottom:5px}
+.pc-val{font-size:1.35rem;font-weight:700;font-family:'DM Mono',monospace}
+.pc-sub{font-size:.68rem;color:var(--cream3);margin-top:3px}
+.g{color:var(--sage)}.y{color:var(--wheat)}.r{color:var(--red)}
+
+/* Rotation */
+.rotation-row{display:flex;overflow-x:auto;gap:0;border-radius:16px;overflow:hidden;margin-bottom:16px}
+.sb{min-width:190px;flex:1;background:var(--cream5);border:1px solid var(--border);
+  padding:20px 18px;border-left:none}
+.sb:first-child{border-left:1px solid var(--border);border-radius:16px 0 0 16px}
+.sb:last-child{border-radius:0 16px 16px 0}
+.sb.active{background:rgba(61,158,65,.08);border-color:rgba(61,158,65,.25)}
+.sb-season{font-size:.63rem;text-transform:uppercase;letter-spacing:1px;color:var(--cream3);margin-bottom:4px}
+.sb-emoji{font-size:1.6rem;margin-bottom:4px}
+.sb-name{font-family:'Playfair Display',serif;font-size:.98rem;margin-bottom:5px}
+.sb-note{font-size:.7rem;color:var(--cream3);line-height:1.5;margin-bottom:7px}
+.sb-profit{font-size:.73rem;font-family:'DM Mono',monospace;color:var(--sage)}
+
+/* Soil memory */
+.sm-table{width:100%;border-collapse:collapse}
+.sm-table th{font-size:.68rem;text-transform:uppercase;letter-spacing:.9px;
+  color:var(--cream3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.sm-table td{padding:11px 12px;font-size:.82rem;border-bottom:1px solid rgba(253,245,228,.05)}
+.sm-table tr:last-child td{border-bottom:none}
+.h-bar-bg{width:80px;height:6px;background:rgba(255,255,255,.08);border-radius:5px;
+  overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
+.h-bar{height:100%;border-radius:5px}
+.status-r{color:var(--sage)}.status-d{color:var(--red)}.status-n{color:var(--cream3)}
+.sm-advice{background:rgba(61,158,65,.07);border:1px solid rgba(61,158,65,.18);
+  border-radius:14px;padding:18px 22px;margin-top:16px;font-size:.85rem;
+  line-height:1.75;color:var(--cream2)}
+
+/* What-if */
+.wi-btns{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:20px}
+.wi-btn{background:var(--cream4);border:1px solid var(--border);border-radius:10px;
+  padding:9px 16px;color:var(--cream2);font-family:'DM Sans',sans-serif;
+  font-size:.8rem;cursor:pointer;transition:background .2s,border-color .2s}
+.wi-btn:hover{background:rgba(61,158,65,.1);border-color:rgba(61,158,65,.3);color:var(--sage)}
+.wi-btn.active{background:rgba(61,158,65,.15);border-color:rgba(61,158,65,.4);color:var(--sage)}
+#wi-result{display:none;animation:fadeUp .35s ease both}
+.wi-table{width:100%;border-collapse:collapse}
+.wi-table th{font-size:.67rem;text-transform:uppercase;letter-spacing:.9px;
+  color:var(--cream3);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.wi-table td{padding:10px;font-size:.82rem;border-bottom:1px solid rgba(253,245,228,.05)}
+.wi-table tr:last-child td{border-bottom:none}
+.delta-pos{color:var(--sage)}.delta-neg{color:var(--red)}.delta-zero{color:var(--cream3)}
+.wi-insight{background:rgba(201,161,74,.07);border:1px solid rgba(201,161,74,.2);
+  border-radius:12px;padding:14px 18px;margin-top:14px;font-size:.82rem;color:var(--cream2)}
+#wi-loading{display:none;color:var(--cream3);font-size:.82rem;padding:12px 0}
+
+/* Insight box */
+.insight{background:rgba(61,158,65,.07);border:1px solid rgba(61,158,65,.18);
+  border-radius:14px;padding:20px 24px;font-size:.87rem;line-height:1.8;color:var(--cream2)}
+.insight-lbl{font-size:.67rem;text-transform:uppercase;letter-spacing:1px;
+  color:var(--sage);margin-bottom:8px}
+
+/* Back btn */
+.back-btn{display:block;width:100%;padding:15px;
+  background:var(--cream4);border:1px solid var(--border);border-radius:12px;
+  color:var(--cream2);font-family:'DM Sans',sans-serif;font-size:.95rem;
+  font-weight:500;cursor:pointer;transition:background .2s;margin-top:20px;text-align:center;
+  text-decoration:none}
+.back-btn:hover{background:rgba(253,245,228,.1)}
+
+footer{text-align:center;margin-top:56px;font-size:.7rem;
+  color:rgba(253,245,228,.17);letter-spacing:.4px;line-height:1.9}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav>
+  <div class="nav-logo">🌾 FarmMind AI</div>
+  <a class="nav-back" href="/">← New Analysis</a>
+</nav>
+
+<!-- Summary chips -->
+<div class="chips">
+  <div class="chip">Soil: <b>{{ inp.soil.title() }}</b></div>
+  <div class="chip">Season: <b>{{ season_labels[inp.season] }}</b></div>
+  {% if inp.rainfall %}<div class="chip">Rain: <b>{{ inp.rainfall|int }}mm</b></div>{% endif %}
+  {% if inp.temp    %}<div class="chip">Temp: <b>{{ inp.temp|int }}°C</b></div>{% endif %}
+  <div class="chip">pH: <b>{{ inp.ph }}</b></div>
+  <div class="chip">N: <b>{{ inp.nitrogen.title() }}</b></div>
+  <div class="chip">Water: <b>{{ water_labels[inp.water] }}</b></div>
+  <div class="chip">Farm: <b>{{ inp.farm_size }} acres</b></div>
+  <div class="chip">Goal: <b>{{ goal_labels[inp.goal] }}</b></div>
+</div>
+
+<!-- ① RECOMMENDATIONS -->
+<div class="sec"><span style="font-size:1.4rem">🌱</span><h2>AI Crop Recommendations</h2></div>
+<div class="crops-grid">
+{% for r in ranked[:6] %}
+  {% set crop = r.crop %}
+  {% set riskclass = 'risk-' ~ r.risk_level|lower %}
+  <div class="crop-card {% if loop.first %}top{% endif %}" onclick="toggleWhy('{{ crop.id }}')">
+    {% if loop.first %}<div class="top-badge">⭐ Top Pick</div>{% endif %}
+    <span class="crop-emoji">{{ crop.emoji }}</span>
+    <div class="crop-name">{{ crop.name }}</div>
+    <div class="match-row">
+      <div class="bar-bg">
+        <div class="bar" data-w="{{ r.pct }}"
+          style="background:{% if r.pct>=75 %}#3d9e41{% elif r.pct>=55 %}#c9a14a{% else %}#777{% endif %}">
+        </div>
+      </div>
+      <span class="pct" style="color:{% if r.pct>=75 %}#7ec882{% elif r.pct>=55 %}#c9a14a{% else %}#777{% endif %}">
+        {{ r.pct }}%
+      </span>
+    </div>
+    <div class="crop-meta">⏱ {{ crop.duration }} &nbsp;|&nbsp; 💰 ₹{{ "{:,}".format(crop.price_per_qt) }}/qt</div>
+    <div class="tags">{% for t in crop.tags %}<span class="tag">{{ t }}</span>{% endfor %}</div>
+    <div style="margin-top:9px">
+      <span class="risk-badge {{ riskclass }}">
+        {% if r.risk_level=='LOW' %}✓{% elif r.risk_level=='MEDIUM' %}⚠{% else %}⚠⚠{% endif %}
+        {{ r.risk_level }} Risk
+      </span>
+    </div>
+    {% if r.risk_flags %}
+    <div style="margin-top:7px">
+      {% for f in r.risk_flags %}
+      <div style="font-size:.68rem;color:rgba(212,160,23,.8);margin-top:3px">• {{ f }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="why-hint">▾ Click to see WHY this was recommended</div>
+
+    <!-- WHY panel -->
+    <div class="why-panel" id="why-{{ crop.id }}">
+      <div class="why-label">🧠 Parameter Breakdown</div>
+      {% for pname, pd in r.params.items() %}
+        {% set ratio = pd.score / pd.max if pd.max else 0 %}
+        <div class="param-row">
+          <span class="p-name">{{ pname }}</span>
+          <div class="p-bar-bg">
+            <div class="p-bar" data-w="{{ (ratio*100)|int }}"
+              style="background:{% if ratio>=0.7 %}#3d9e41{% elif ratio>=0.4 %}#c9a14a{% else %}#e05555{% endif %}">
+            </div>
+          </div>
+          <span class="p-score">{{ pd.score }}/{{ pd.max }}</span>
+          <span class="p-note">{{ pd.note }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+<hr>
+
+<!-- ② PROFIT ESTIMATOR -->
+<div class="sec"><span style="font-size:1.4rem">📉</span><h2>Market Price & Profit Estimator</h2></div>
+{% for r in ranked[:3] %}
+  {% set p = r.profit %}
+  <div class="profit-block">
+    <h3>
+      {{ r.crop.emoji }} {{ r.crop.name }}
+      <span style="font-size:.72rem;background:rgba(201,161,74,.1);border:1px solid rgba(201,161,74,.2);
+        border-radius:20px;padding:2px 9px;color:var(--wheat)">{{ r.pct }}% match</span>
+    </h3>
+    <div class="profit-grid">
+      <div class="pc"><div class="pc-lbl">Gross Revenue</div>
+        <div class="pc-val y">₹{{ "{:,}".format(p.gross) }}</div>
+        <div class="pc-sub">{{ r.crop.yield_per_acre }} qt/ac × {{ inp.farm_size }} ac × ₹{{ r.crop.price_per_qt }}/qt</div>
+      </div>
+      <div class="pc"><div class="pc-lbl">Total Input Cost</div>
+        <div class="pc-val">₹{{ "{:,}".format(p.cost) }}</div>
+        <div class="pc-sub">Seeds + labour + inputs</div>
+      </div>
+      <div class="pc hl"><div class="pc-lbl">Net Profit</div>
+        <div class="pc-val {% if p.net>0 %}g{% else %}r{% endif %}">₹{{ "{:,}".format(p.net) }}</div>
+        <div class="pc-sub">ROI: {{ p.roi }}%</div>
+      </div>
+      <div class="pc"><div class="pc-lbl">Break-Even Drop</div>
+        <div class="pc-val y">{{ p.be_drop }}%</div>
+        <div class="pc-sub">Price can fall {{ p.be_drop }}% before loss</div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+<hr>
+
+<!-- ③ ROTATION PLANNER -->
+<div class="sec"><span style="font-size:1.4rem">🔄</span><h2>Multi-Season Crop Rotation Plan</h2></div>
+<div class="rotation-row">
+{% for r in rotation %}
+  <div class="sb {% if loop.first %}active{% endif %}">
+    <div class="sb-season">{{ r.season_label }}</div>
+    <div class="sb-emoji">{{ r.crop.emoji }}</div>
+    <div class="sb-name">{{ r.crop.name }}</div>
+    <div class="sb-note">{{ r.note }}</div>
+    <div class="sb-profit">Est. ₹{{ "{:,}".format(r.net) }} net</div>
+  </div>
+{% endfor %}
+</div>
+<div class="insight" style="margin-top:0">
+  <div class="insight-lbl">🔄 Rotation Logic</div>
+  Sequence: <strong>{{ rotation|map(attribute='crop')|map(attribute='name')|join(' → ') }} → repeat</strong>.
+  {% if rotation[0].crop.soil_effect == 'depleting' %}
+    <strong>{{ rotation[0].crop.name }}</strong> depletes soil —
+    <strong>{{ rotation[1].crop.name }}</strong> naturally restores nitrogen in Season 2.
+  {% endif %}
+  Crop rotation breaks pest/disease cycles and reduces fertilizer dependency by ~30%.
+  Total 3-season net: <strong style="color:var(--sage)">
+    ₹{{ "{:,}".format(rotation|sum(attribute='net')) }}
+  </strong> for {{ inp.farm_size }} acres.
+</div>
+
+<hr>
+
+<!-- ④ SOIL MEMORY -->
+<div class="sec"><span style="font-size:1.4rem">🧬</span><h2>Soil Memory & Degradation Tracker</h2></div>
+<table class="sm-table">
+  <thead>
+    <tr>
+      <th>Season</th><th>Crop Grown</th><th>pH After</th>
+      <th>Nitrogen</th><th>Soil Health</th><th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for s in soil_history %}
+    <tr>
+      <td style="color:var(--cream2)">{{ s.season_label }}</td>
+      <td>{{ s.crop.emoji }} {{ s.crop.name }}</td>
+      <td style="font-family:'DM Mono',monospace">
+        {{ s.ph }}
+        {% if s.ph_warn == 'acidic' %}<span style="color:var(--red);font-size:.7rem"> (acidic)</span>{% endif %}
+        {% if s.ph_warn == 'alkaline' %}<span style="color:var(--yellow);font-size:.7rem"> (alkaline)</span>{% endif %}
+      </td>
+      <td>{{ s.nitrogen.title() }}</td>
+      <td>
+        <div class="h-bar-bg"><div class="h-bar" style="width:{{ s.health }}%;
+          background:{% if s.health>=75 %}#3d9e41{% elif s.health>=50 %}#c9a14a{% else %}#e05555{% endif %}">
+        </div></div>{{ s.health }}%
+      </td>
+      <td class="{% if s.status=='restored' %}status-r{% elif s.status=='depleted' %}status-d{% else %}status-n{% endif %}">
+        {% if s.status=='restored' %}↑ Restored{% elif s.status=='depleted' %}↓ Depleted{% else %}→ Neutral{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="sm-advice">
+  <div style="font-size:.67rem;text-transform:uppercase;letter-spacing:1px;color:var(--sage);margin-bottom:6px">
+    🧬 Soil Health After 4 Seasons:
+    <strong style="font-size:1rem;font-family:'DM Mono',monospace;
+      color:{% if soil_final>=75 %}#7ec882{% elif soil_final>=50 %}#c9a14a{% else %}#e05555{% endif %}">
+      {{ soil_final }}%
+    </strong>
+  </div>
+  {{ soil_advice }}
+</div>
+
+<hr>
+
+<!-- ⑤ WHAT-IF SIMULATOR -->
+<div class="sec"><span style="font-size:1.4rem">🔬</span><h2>What-If Simulator</h2></div>
+<p style="color:var(--cream3);font-size:.84rem;margin-bottom:16px">
+  Change one condition and see how crop rankings shift instantly.
+</p>
+<div class="wi-btns">
+  {% for s in whatif_scenarios %}
+  <button class="wi-btn" onclick="runWhatIf('{{ s.id }}', this)">{{ s.label }}</button>
+  {% endfor %}
+</div>
+<div id="wi-loading">⟳ Recalculating scores…</div>
+<div id="wi-result">
+  <div id="wi-scenario" style="font-size:.8rem;color:var(--cream3);margin-bottom:12px"></div>
+  <table class="wi-table">
+    <thead><tr><th>#</th><th>Crop</th><th>Before</th><th>After</th><th>Change</th></tr></thead>
+    <tbody id="wi-tbody"></tbody>
+  </table>
+  <div id="wi-insight" class="wi-insight"></div>
+</div>
+
+<hr>
+
+<!-- AI INSIGHT -->
+<div class="sec"><span style="font-size:1.4rem">🤖</span><h2>AI Agronomist Insight</h2></div>
+<div class="insight">
+  <div class="insight-lbl">AI Summary</div>
+  Your <strong>{{ inp.soil.title() }}</strong> soil in <strong>{{ season_labels[inp.season] }}</strong>
+  best supports <strong>{{ top.emoji }} {{ top.name }}</strong> with a
+  <strong style="color:var(--sage)">{{ ranked[0].pct }}%</strong> compatibility score.
+  {% if n_fixer and inp.nitrogen == 'low' %}
+  Since nitrogen is low, consider intercropping with <strong>{{ n_fixer.emoji }} {{ n_fixer.name }}</strong>
+  — a natural nitrogen-fixer that enriches soil for the next season.
+  {% endif %}
+  <br><br>
+  <span style="color:var(--cream3);font-size:.8rem">
+    🧠 Scoring: Soil(25) + Season(25) + Rainfall(15) + Temp(15) + pH(10) + Water(5) + Nitrogen(3) + Goal(2) = 100pts
+  </span>
+</div>
+
+<a class="back-btn" href="/">← Analyze Different Conditions</a>
+
+<footer>
+  FarmMind AI v3.0 · AI Lab Project<br>
+  Heuristic Search · Risk Analysis · Stateful Soil Simulation · What-If Exploration
+</footer>
+</div>
+
+<script>
+// Animate bars on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.bar[data-w],.p-bar[data-w]').forEach(b => {
+    setTimeout(() => b.style.width = b.dataset.w + '%', 100);
+  });
+});
+
+// Toggle WHY panel
+function toggleWhy(id) {
+  const panel = document.getElementById('why-' + id);
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    panel.querySelectorAll('.p-bar[data-w]').forEach(b => {
+      setTimeout(() => b.style.width = b.dataset.w + '%', 50);
+    });
+  }
+}
+
+// Collect original inp + ranked from template
+const origInp = {
+  soil:      "{{ inp.soil }}",
+  season:    "{{ inp.season }}",
+  rainfall:  {{ inp.rainfall or 'null' }},
+  temp:      {{ inp.temp or 'null' }},
+  ph:        {{ inp.ph }},
+  nitrogen:  "{{ inp.nitrogen }}",
+  water:     "{{ inp.water }}",
+  farm_size: {{ inp.farm_size }},
+  goal:      "{{ inp.goal }}",
+};
+const origRanked = [
+  {% for r in ranked[:6] %}
+  { crop_id: "{{ r.crop.id }}", pct: {{ r.pct }} },
+  {% endfor %}
+];
+
+// What-If AJAX
+async function runWhatIf(scenarioId, btn) {
+  document.querySelectorAll('.wi-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('wi-loading').style.display = 'block';
+  document.getElementById('wi-result').style.display  = 'none';
+
+  const res  = await fetch('/whatif', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ scenario_id: scenarioId, inp: origInp, orig_ranked: origRanked })
+  });
+  const data = await res.json();
+
+  document.getElementById('wi-loading').style.display = 'none';
+  document.getElementById('wi-scenario').textContent  = '📌 Scenario: ' + data.scenario;
+
+  const medals = ['🥇','🥈','🥉','4.','5.','6.'];
+  document.getElementById('wi-tbody').innerHTML = data.results.map((r,i) => {
+    const dClass = r.delta > 0 ? 'delta-pos' : r.delta < 0 ? 'delta-neg' : 'delta-zero';
+    const dStr   = r.delta > 0 ? `+${r.delta}%` : r.delta < 0 ? `${r.delta}%` : '—';
+    return `<tr>
+      <td>${medals[i]||r.rank}</td>
+      <td>${r.crop_emoji} ${r.crop_name}</td>
+      <td style="font-family:'DM Mono',monospace">${r.old_pct}%</td>
+      <td style="font-family:'DM Mono',monospace">${r.new_pct}%</td>
+      <td class="${dClass}" style="font-family:'DM Mono',monospace;font-weight:600">${dStr}</td>
+    </tr>`;
+  }).join('');
+
+  const m = data.top_mover;
+  document.getElementById('wi-insight').textContent =
+    `💡 Biggest impact: ${m.crop_emoji} ${m.crop_name} shifts by ${m.delta > 0 ? '+' : ''}${m.delta} points.`;
+
+  document.getElementById('wi-result').style.display = 'block';
+}
+</script>
+</body>
+</html>
